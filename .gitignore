@@ -1,0 +1,23 @@
+# Arquivos compilados (não queremos subir o binário, só o código fonte)
+*.class
+
+# Pastas de build/pacotes (gerados automaticamente)
+bin/
+build/
+target/
+dist/
+out/
+
+# Arquivos de IDEs (configurações do seu editor que não servem para os outros)
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# Arquivos do sistema operacional (lixo que o Mac/Windows cria)
+.DS_Store
+Thumbs.db
