@@ -10,7 +10,7 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>20.0.1</javafx.version>
+    <javafx.version>21</javafx.version>
   </properties>
 
   <dependencies>
@@ -51,7 +51,22 @@
 
   <build>
     <plugins>
-      <!-- Plugin para exec -->
+      <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.8</version>
+        <configuration>
+          <mainClass>app.MainApp</mainClass>
+          <options>
+            <option>-Dprism.order=sw</option>
+            <option>--module-path</option>
+            <option>/home/leny/.local/share/mise/installs/javafx-sdk-21/lib</option>
+            <option>--add-modules</option>
+            <option>javafx.controls,javafx.fxml</option>
+          </options>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
