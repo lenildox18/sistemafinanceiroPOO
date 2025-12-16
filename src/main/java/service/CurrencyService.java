@@ -61,7 +61,6 @@ public class CurrencyService {
         return rate;
     }
 
-    // MÉTODO ATUALIZADO PARA AWESOMEAPI
     private BigDecimal fetchRateFromApi(String from, String to) throws IOException, InterruptedException {
         // Monta a URL no padrão: .../last/USD-BRL
         String uri = API_BASE + from + "-" + to;
@@ -90,8 +89,7 @@ public class CurrencyService {
         }
 
         // Pega o valor "bid" (compra)
-        BigDecimal result = json.getAsJsonObject(jsonKey).get("bid").getAsBigDecimal();
-        return result;
+        return json.getAsJsonObject(jsonKey).get("bid").getAsBigDecimal();
     }
 
     // Utilitário para converter valor

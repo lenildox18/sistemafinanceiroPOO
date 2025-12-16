@@ -32,6 +32,11 @@ public class MainApp extends Application {
         root.setCenter(home.getView());
 
         Scene scene = new Scene(root, 1000, 600);
+
+        // Isso carrega o arquivo style.css da pasta resources e aplica na janela inteira
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        // ---------------------------------
+
         stage.setTitle("Gerenciador de Finanças Pessoais");
         stage.setScene(scene);
         stage.show();
