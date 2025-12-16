@@ -1,76 +1,76 @@
-# Gerenciador de Finanças Pessoais com Cotação (Java)
 
-Projeto exemplo em Java usando JavaFX para gerenciar receitas e despesas com suporte a conversão de moedas (USD/EUR → BRL), persistência por arquivos JSON e exportação de relatórios (TXT e PDF).
 
-Sumário rápido
-- Interface gráfica com 3 telas (Home, Nova Transação, Configurações/Categorias).
-- Modelos orientados a objetos: Transacao (abstrata), Receita, Despesa, Categoria.
-- Composição, herança, polimorfismo, encapsulamento, interfaces e exceções personalizadas.
-- Persistência em JSON (`./data/transacoes.json`, `./data/categorias.json`, `./data/config.json`).
-- Consome API pública de câmbio (exchangerate.host) com cache (10 minutos) e fallback para taxa manual.
-- Exporta relatórios em TXT (obrigatório) e PDF (opcional — depende da biblioteca).
-- Pacote sugerido: model, service, persistence, ui, util, export.
+# Gerenciador de Finanças Pessoais (JavaFX + POO)
 
-Requisitos atendidos
-- OO: classes, composição (Categoria dentro de Transacao / Repositorio), herança (Transacao → Receita/Despesa), polimorfismo (impacto no saldo), encapsulamento (getters/setters com validação), interfaces (Exportavel), exceções personalizadas.
-- GUI JavaFX com ao menos 3 telas.
-- Persistência por arquivos JSON.
-- Consumo de API de câmbio com cache e tratamento de erros.
-- Exportação em TXT e PDF (usando PDFBox).
-- Mensagens de erro na UI.
-- Justificativas e observações (abaixo).
+Projeto acadêmico (IFPB - Campus Esperança) desenvolvido em Java para gestão financeira pessoal. O sistema permite controle de receitas e despesas, conversão monetária em tempo real e persistência de dados.
 
-Justificativas de uso de conceitos OO (resumo)
-- Herança (Transacao abstrata): evita repetição de atributos e permite comportamentos distintos (Despesa valida saldo).
-- Composição: RepositorioPersistencia "tem" coleções de transações e categorias; facilita salvar/carregar.
-- Polimorfismo: método aplicarNoSaldo() em Transacao é implementado por Receita/Despesa de forma diferente.
-- Encapsulamento: validações no setter de data e valor; exceções lançadas para regras de domínio.
-- Interfaces: Exportavel define contrato para geração de relatórios em diferentes formatos.
-- Exceções personalizadas: tornam regras de negócio previsíveis e fáceis de tratar na camada de UI.
+## 🚀 Principais Funcionalidades
+* **Interface Gráfica Moderna:** Dashboard com cards de resumo, gráficos interativos e tabelas estilizadas via CSS (Dark/Clean).
+* **Gestão Completa:** CRUD de transações e gerenciamento de categorias (padrão Master-Detail).
+* **Multi-Moeda:** Suporte nativo a Real (BRL), Dólar (USD) e Euro (EUR).
+* **Cotação Online:** Integração com a **AwesomeAPI** para taxas de câmbio em tempo real (com cache inteligente).
+* **Persistência:** Dados salvos automaticamente em JSON (`./data/`).
+* **Relatórios:** Exportação de dados para TXT e PDF (via PDFBox).
 
-Observações / Omissões justificadas
-- Não foi implementado Controle de Usuário (Usuario) para manter foco nos requisitos essenciais. Poderia ser incluído facilmente.
-- Internacionalização foi preparada (mensagens em pt-BR no código) — integração completa para en-US pode ser adicionada.
-- Persistência por arquivos JSON foi escolhida por legibilidade e facilidade de inspeção. Serialização binária poderia economizar espaço, mas reduziria portabilidade.
+## 🛠 Tecnologias e Requisitos
+* **Linguagem:** Java 17+
+* **Interface:** JavaFX (com CSS customizado)
+* **Build:** Maven
+* **Bibliotecas:** Gson (JSON), Apache PDFBox (Relatórios).
 
-Como rodar
-1. Pré-requisitos:
-   - JDK 17+ instalado.
-   - Maven (para construir) ou configurar dependências manualmente.
-   - JavaFX SDK (se estiver usando execução direta, pode ser necessário apontar --module-path).
+### Destaques de Orientação a Objetos (POO)
+O projeto aplica conceitos fundamentais para garantir extensibilidade e manutenção:
+* **Herança:** Classe base `Transacao` estendida por `Receita` e `Despesa`.
+* **Polimorfismo:** Método `impactoNoSaldo()` comporta-se de forma distinta para créditos e débitos.
+* **Encapsulamento:** Validações robustas nos *setters* e uso de exceções personalizadas (`SaldoInsuficienteException`).
+* **Composição:** O `RepositorioPersistencia` gerencia coleções de objetos.
+* **Interfaces:** Contrato `Exportavel` para gerar relatórios em múltiplos formatos.
 
-2. Build (Maven):
-   - `mvn clean package`
-   - Para executar com Maven + JavaFX (exemplo):
-     mvn exec:java -Dexec.mainClass="app.MainApp"
+## 📂 Estrutura do Projeto
 
-   Observação: dependendo da sua versão de Java e JavaFX, você pode precisar configurar o `--module-path` e `--add-modules javafx.controls,javafx.fxml`.
+```
+src/main/
+├── java/
+│   ├── app/           # Launcher e MainApp
+│   ├── model/         # Classes de domínio (Transacao, Categoria...)
+│   ├── persistence/   # Gerenciamento de arquivos JSON
+│   ├── service/       # CurrencyService (API) e RelatorioService
+│   ├── ui/            # Views (Home, NovaTransacao, Config)
+│   └── util/          # Utilitários de data e configuração
+└── resources/
+    └── style.css      # Estilização visual da interface
 
-3. Dados
-   - Ao primeiro uso os arquivos serão criados automaticamente em `./data`.
-   - Você pode importar/exportar JSON via funcionalidades na tela de configurações.
+``` 
 
-Estrutura de arquivos (resumida)
-- src/main/java/
-  - app.MainApp (inicia JavaFX)
-  - model.*
-  - persistence.*
-  - service.CurrencyService, RelatorioService
-  - export.Exportavel, RelatorioMensal
-  - ui.HomeView, NovaTransacaoView, ConfiguracoesView
-  - util.Config, DateUtils, exceptions/*
+**⚙️ Como Rodar** - #Pré-requisitos* JDK 17 ou superior.
+* Maven instalado.
 
-Notas técnicas
-- API de câmbio: https://exchangerate.host — usada para realizar conversões e obter taxas.
-- Cache de cotações: 10 minutos por par de moedas.
-- Exportação em PDF usa Apache PDFBox.
-- JSON via Gson.
+**Execução via Maven**
 
-Testes
-- Inclui testes básicos para CurrencyService (checagem de cache e fallback).
-- Testes mais extensos podem ser adicionados para cobertura do domínio.
+Devido às modularização do JavaFX (versões 11+), o projeto utiliza uma classe `Launcher` para inicialização correta.
 
-Licença e uso
-- Código de exemplo, livre para estudo e modificação. Bibliotecas externas podem ter suas próprias licenças (PDFBox, Gson, JavaFX).
+1. **Compile o projeto:**
+```bash
+mvn clean package
 
-Abaixo seguem todos os arquivos fonte principais para compilar/executar o projeto.
+```
+
+
+2. **Execute (apontando para o Launcher):**
+```bash
+mvn exec:java -Dexec.mainClass="app.Launcher"
+
+```
+
+
+
+*Nota: Ao iniciar pela primeira vez, a pasta `./data` será criada automaticamente.*
+
+*📝 Notas Técnicas*
+* **API de Câmbio:** Migrado de *exchangerate.host* para **[AwesomeAPI](https://docs.awesomeapi.com.br/)** (HTTPS, Gratuita e sem Key).
+* **Cache:** O sistema armazena cotações em memória por 10 minutos para economizar requisições e garantir performance.
+* **Estilização:** A interface não utiliza o visual padrão do JavaFX (Modena), aplicando um tema personalizado em `src/main/resources/style.css`.
+
+*📜 Licença*
+
+Projeto desenvolvido para fins educacionais no curso de Análise e Desenvolvimento de Sistemas (IFPB). Livre para estudo e modificação.
