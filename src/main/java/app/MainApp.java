@@ -13,6 +13,8 @@ import ui.HomeView;
 import ui.NovaTransacaoView;
 import util.Config;
 
+import java.net.URL;
+
 public class MainApp extends Application {
     private Stage primaryStage;
     private RepositorioPersistencia repositorio;
@@ -33,9 +35,13 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root, 1000, 600);
 
-        // Isso carrega o arquivo style.css da pasta resources e aplica na janela inteira
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-        // ---------------------------------
+        // Ajuste: verifica se style.css existe antes de aplicar, evitando NPE em getResource()
+        URL cssUrl = getClass().getResource("/style.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        } else {
+            System.err.println("Aviso: style.css não encontrado em resources; continuando sem estilo.");
+        }
 
         stage.setTitle("Gerenciador de Finanças Pessoais");
         stage.setScene(scene);

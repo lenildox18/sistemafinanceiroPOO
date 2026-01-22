@@ -26,4 +26,14 @@ public class Categoria {
         Categoria that = (Categoria) o;
         return Objects.equals(id, that.id);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return nome;
+    }
 }

@@ -12,9 +12,9 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementação simples de Relatório mensal que gera TXT e PDF.
- */
+
+// Implementação simples de Relatório mensal que gera TXT e PDF.
+
 public class RelatorioMensal implements Exportavel {
     private final int ano;
     private final int mes;
