@@ -1,0 +1,123 @@
+/* --- FUNDO GERAL --- */
+.root {
+    -fx-background-color: #f4f6f8; /* Cinza bem clarinho moderno */
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* --- TABELAS (Para o HomeView) --- */
+.table-view {
+    -fx-background-color: transparent; /* Remove bordas antigas */
+    -fx-base: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 10px;
+}
+
+/* Cabeçalho da Tabela */
+.table-view .column-header-background {
+    -fx-background-color: #2c3e50; /* Mesmo azul do menu */
+    -fx-background-radius: 5px 5px 0 0; /* Arredonda o topo */
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 40px; /* Altura do cabeçalho */
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+}
+
+/* Linhas da Tabela */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: #ecf0f1; /* Linha sutil entre itens */
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Linha selecionada */
+.table-view:focused .table-row-cell:filled:focused,
+.table-view:focused .table-row-cell:filled:selected {
+    -fx-background-color: #3498db; /* Azul destaque */
+    -fx-table-cell-border-color: transparent;
+}
+
+/* --- BOTÕES (Geral) --- */
+.button {
+    -fx-background-color: #2980b9; /* Azul padrão */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 15px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #3498db; /* Azul mais claro no hover */
+}
+
+/* Botão de "Salvar" ou Ação Principal (Verde) */
+.button-success {
+    -fx-background-color: #27ae60;
+}
+.button-success:hover {
+    -fx-background-color: #2ecc71;
+}
+
+/* Botão de "Cancelar" ou Excluir (Vermelho) */
+.button-danger {
+    -fx-background-color: #c0392b;
+}
+.button-danger:hover {
+    -fx-background-color: #e74c3c;
+}
+
+/* --- FORMULÁRIOS (NovaTransacaoView / Config) --- */
+.text-field, .date-picker .text-field {
+    -fx-background-color: white;
+    -fx-background-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px;
+}
+
+.text-field:focused {
+    -fx-border-color: #3498db; /* Borda azul quando clica */
+}
+
+/* --- DASHBOARD CARDS (Resumo) --- */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-padding: 15px;
+    -fx-min-width: 200px;
+}
+
+.card-title {
+    -fx-text-fill: #7f8c8d; /* Cinza suave */
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.card-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Cores específicas para textos */
+.text-primary { -fx-text-fill: #2c3e50; } /* Azul escuro (Saldo) */
+.text-success { -fx-text-fill: #27ae60; } /* Verde (Receita) */
+.text-danger  { -fx-text-fill: #c0392b; } /* Vermelho (Despesa) */
+
+/* Título de seções */
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10px 0;
+}
