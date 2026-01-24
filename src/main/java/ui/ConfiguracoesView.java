@@ -1,5 +1,11 @@
 package ui;
 
+import javafx.stage.FileChooser;
+import service.RelatorioService;
+import java.io.File;
+import java.time.LocalDate;
+import javafx.scene.control.Separator;
+
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,16 +22,16 @@ import persistence.RepositorioPersistencia;
 import java.util.UUID;
 
 /**
- * Tela de configurações: Gerenciamento de Categorias com visual Master-Detail.
+ * Tela de configurações: Gerenciamento de Categorias e Relatórios.
  */
 public class ConfiguracoesView {
     private final RepositorioPersistencia repo;
     private final BorderPane view;
 
-    // Componentes de UI que precisam ser acessados pelos eventos
+    // Componentes de UI
     private ListView<Categoria> list;
     private TextField txtNome;
-    private ColorPicker colorPicker; // Adicionei para ficar mais profissional
+    private ColorPicker colorPicker;
     private Button btnSalvar;
     private Button btnExcluir;
     private Button btnNova;
@@ -43,15 +49,15 @@ public class ConfiguracoesView {
         view.setPadding(new Insets(20));
 
         // --- TÍTULO ---
-        Text titulo = new Text("Gerenciar Categorias");
+        Text titulo = new Text("Configurações do Sistema");
         titulo.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
 
-        // --- COLUNA DA ESQUERDA (LISTA) ---
+        // --- COLUNA DA ESQUERDA (LISTA DE CATEGORIAS) ---
         VBox leftPane = new VBox(10);
         leftPane.setPrefWidth(300);
 
         Label lblList = new Label("Categorias Cadastradas");
-        lblList.getStyleClass().add("section-title"); // Classe CSS
+        lblList.getStyleClass().add("section-title");
 
         list = new ListView<>();
         list.setItems(FXCollections.observableArrayList(repo.getCategorias()));
@@ -64,7 +70,7 @@ public class ConfiguracoesView {
                     setGraphic(null);
                 } else {
                     setText(item.getNome());
-                    // Bolinha com a cor da categoria (opcional, visual)
+                    // Opcional: bolinha de cor
                     // setStyle("-fx-control-inner-background: " + item.getCor());
                 }
             }
@@ -79,15 +85,15 @@ public class ConfiguracoesView {
 
         leftPane.getChildren().addAll(lblList, list);
 
-        // --- COLUNA DA DIREITA (FORMULÁRIO) ---
+        // --- COLUNA DA DIREITA (FORMULÁRIOS) ---
         VBox rightPane = new VBox(15);
         rightPane.setPadding(new Insets(0, 0, 0, 20)); // Afasta da lista
         rightPane.setAlignment(Pos.TOP_LEFT);
 
+        // 1. Bloco de Categorias
         Label lblForm = new Label("Detalhes da Categoria");
         lblForm.getStyleClass().add("section-title");
 
-        // Campos
         Label lblNome = new Label("Nome:");
         txtNome = new TextField();
         txtNome.setMaxWidth(300);
@@ -96,22 +102,73 @@ public class ConfiguracoesView {
         colorPicker = new ColorPicker(Color.GRAY);
         colorPicker.setMaxWidth(300);
 
-        // Botões
         btnNova = new Button("Nova / Limpar");
         btnNova.setOnAction(e -> limparFormulario());
 
         btnSalvar = new Button("Salvar");
-        btnSalvar.getStyleClass().add("button-success"); // Verde
+        btnSalvar.getStyleClass().add("button-success");
         btnSalvar.setOnAction(e -> salvar());
 
         btnExcluir = new Button("Excluir");
-        btnExcluir.getStyleClass().add("button-danger"); // Vermelho
-        btnExcluir.setDisable(true); // Começa desabilitado
+        btnExcluir.getStyleClass().add("button-danger");
+        btnExcluir.setDisable(true);
         btnExcluir.setOnAction(e -> excluir());
 
         HBox buttonBox = new HBox(10, btnNova, btnSalvar, btnExcluir);
 
-        rightPane.getChildren().addAll(lblForm, lblNome, txtNome, lblCor, colorPicker, buttonBox);
+        // --- 2. BLOCO DE RELATÓRIOS (NOVO CÓDIGO AQUI) ---
+
+        Separator separator = new Separator();
+        separator.setPadding(new Insets(20, 0, 10, 0)); // Espaço visual
+
+        Label lblRelatorios = new Label("Relatórios e Exportação");
+        lblRelatorios.getStyleClass().add("section-title");
+
+        Button btnPdf = new Button("Baixar Relatório Mensal (PDF)");
+        // Estilo Laranja para destacar
+        btnPdf.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnPdf.setMaxWidth(300);
+
+        // AÇÃO DO BOTÃO PDF
+        btnPdf.setOnAction(e -> {
+            try {
+                // A. Configura Janela de Salvar
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Salvar Relatório Financeiro");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Arquivos PDF", "*.pdf"));
+                fileChooser.setInitialFileName("Relatorio_" + LocalDate.now() + ".pdf");
+
+                File destino = fileChooser.showSaveDialog(null);
+
+                if (destino != null) {
+                    // B. Instancia o Serviço usando o repositório existente
+                    RelatorioService service = new RelatorioService(this.repo);
+
+                    // Pega mês atual (pode ser melhorado com DatePicker depois)
+                    int ano = LocalDate.now().getYear();
+                    int mes = LocalDate.now().getMonthValue();
+
+                    // C. Gera o PDF
+                    service.gerarRelatorioMensal(ano, mes, destino, "PDF");
+
+                    // D. Feedback
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Sucesso");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Relatório salvo em:\n" + destino.getAbsolutePath());
+                    alert.showAndWait();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showAlert("Erro ao gerar PDF: " + ex.getMessage());
+            }
+        });
+
+        // Adiciona tudo na tela da direita (Categorias + Relatórios)
+        rightPane.getChildren().addAll(
+                lblForm, lblNome, txtNome, lblCor, colorPicker, buttonBox, // Parte de Categorias
+                separator, lblRelatorios, btnPdf                           // Parte de Relatórios
+        );
 
         // --- MONTAGEM FINAL ---
         view.setTop(titulo);
@@ -120,18 +177,18 @@ public class ConfiguracoesView {
         BorderPane.setMargin(titulo, new Insets(0, 0, 20, 0));
     }
 
+    // --- MÉTODOS AUXILIARES ---
+
     private void selecionarCategoria(Categoria c) {
         this.categoriaSelecionada = c;
         txtNome.setText(c.getNome());
-        // Tenta converter a string Hex para cor, se falhar usa cinza
         try {
             colorPicker.setValue(Color.web(c.getCor()));
         } catch (Exception e) {
             colorPicker.setValue(Color.GRAY);
         }
-
         btnSalvar.setText("Atualizar");
-        btnExcluir.setDisable(false); // Pode excluir se tem algo selecionado
+        btnExcluir.setDisable(false);
     }
 
     private void limparFormulario() {
@@ -150,22 +207,19 @@ public class ConfiguracoesView {
             return;
         }
 
-        // Converte a cor do ColorPicker para Hex String (#RRGGBB)
         String hexColor = toHexString(colorPicker.getValue());
 
         if (categoriaSelecionada == null) {
-            // MODO CRIAR
             Categoria nova = new Categoria(UUID.randomUUID().toString(), nome, hexColor);
             repo.addCategoria(nova);
             list.getItems().add(nova);
             limparFormulario();
             showInfo("Categoria criada com sucesso!");
         } else {
-            // MODO EDITAR
             categoriaSelecionada.setNome(nome);
             categoriaSelecionada.setCor(hexColor);
-            repo.saveCategorias(); // Salva no JSON
-            list.refresh(); // Atualiza o texto na lista visual
+            repo.saveCategorias();
+            list.refresh();
             showInfo("Categoria atualizada!");
         }
     }
@@ -186,7 +240,6 @@ public class ConfiguracoesView {
         }
     }
 
-    // Utilitário para converter Cor do JavaFX para String Hex
     private String toHexString(Color color) {
         return String.format("#%02X%02X%02X",
                 (int) (color.getRed() * 255),

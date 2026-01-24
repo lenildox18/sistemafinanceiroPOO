@@ -2,9 +2,7 @@ package app;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import persistence.RepositorioPersistencia;
@@ -14,6 +12,7 @@ import ui.NovaTransacaoView;
 import util.Config;
 
 import java.net.URL;
+import java.util.Optional;
 
 public class MainApp extends Application {
     private Stage primaryStage;
@@ -30,7 +29,7 @@ public class MainApp extends Application {
         MenuBar menuBar = createMenuBar();
         root.setTop(menuBar);
 
-        HomeView home = new HomeView(repositorio, this::showNovaTransacao, this::showConfiguracoes);
+        HomeView home = new HomeView(repositorio, this::showNovaTransacao, this::showConfiguracoes, this::refreshHome);
         root.setCenter(home.getView());
 
         Scene scene = new Scene(root, 1000, 600);
@@ -53,12 +52,24 @@ public class MainApp extends Application {
         Menu menuArquivo = new Menu("Arquivo");
         MenuItem nova = new MenuItem("Nova Transação");
         nova.setOnAction(e -> showNovaTransacao());
+        MenuItem reiniciar = new MenuItem("Reiniciar Gestão");
+        reiniciar.setOnAction(e -> {
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+            a.setTitle("Reiniciar Gestão");
+            a.setHeaderText("Reiniciar dados");
+            a.setContentText("Isto apagará todas as transações e recriará categorias padrão. Deseja continuar?");
+            Optional<javafx.scene.control.ButtonType> res = a.showAndWait();
+            if (res.isPresent() && res.get() == ButtonType.OK) {
+                repositorio.resetData();
+                refreshHome();
+            }
+        });
         MenuItem sair = new MenuItem("Sair");
         sair.setOnAction(e -> {
             repositorio.saveAll();
             primaryStage.close();
         });
-        menuArquivo.getItems().addAll(nova, sair);
+        menuArquivo.getItems().addAll(nova, reiniciar, sair);
 
         Menu menuEditar = new Menu("Editar");
         MenuItem categorias = new MenuItem("Categorias / Configurações");
@@ -83,7 +94,7 @@ public class MainApp extends Application {
 
     private void refreshHome() {
         BorderPane pane = (BorderPane) primaryStage.getScene().getRoot();
-        HomeView home = new HomeView(repositorio, this::showNovaTransacao, this::showConfiguracoes);
+        HomeView home = new HomeView(repositorio, this::showNovaTransacao, this::showConfiguracoes, this::refreshHome);
         pane.setCenter(home.getView());
     }
 

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "c0d89200-348c-4fd8-9412-678106868bbc",
+    "nome": "Salário",
+    "cor": "#4CAF50"
+  },
+  {
+    "id": "b9afd4da-61e4-493a-b2c5-327434036eb3",
+    "nome": "Alimentação",
+    "cor": "#FF9800"
+  },
+  {
+    "id": "b01036d7-b15d-4269-8aac-e65fcc7f3658",
+    "nome": "Transporte",
+    "cor": "#2196F3"
+  }
+]

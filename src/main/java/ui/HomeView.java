@@ -1,22 +1,23 @@
 package ui;
 
-import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.chart.PieChart;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import model.Transacao;
-import model.Receita;
-import model.Despesa;
 import persistence.RepositorioPersistencia;
+import model.Transacao;
+import model.Categoria;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.TableRow;
 
 /**
  * Tela Home: Dashboard moderno com cards de resumo, gráfico e tabela.
@@ -27,11 +28,17 @@ public class HomeView {
     // Formatador para Dinheiro Brasileiro (R$ 1.000,00)
     private final NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
     private final DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final Runnable onRefresh;
 
-    public HomeView(RepositorioPersistencia repo, Runnable onNovaTransacao, Runnable onConfiguracoes) {
+    public HomeView(RepositorioPersistencia repo, Runnable onNovaTransacao, Runnable onConfiguracoes, Runnable onRefresh) {
         this.repo = repo;
         this.view = new BorderPane();
+        this.onRefresh = onRefresh;
         build(onNovaTransacao, onConfiguracoes);
+    }
+
+    public BorderPane getView() {
+        return view;
     }
 
     private void build(Runnable onNovaTransacao, Runnable onConfiguracoes) {
@@ -156,61 +163,79 @@ public class HomeView {
                 .collect(Collectors.toList());
         table.setItems(FXCollections.observableArrayList(ultimas));
 
+        // Context menu para excluir transação com confirmação
+        table.setRowFactory(tv -> {
+            TableRow<Transacao> row = new TableRow<>();
+            final ContextMenu rowMenu = new ContextMenu();
+            MenuItem deleteItem = new MenuItem("Excluir");
+            deleteItem.setOnAction(e -> {
+                Transacao item = row.getItem();
+                if (item == null) return;
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Confirmar exclusão");
+                confirm.setHeaderText("Excluir transação");
+                confirm.setContentText("Deseja realmente excluir esta transação?");
+                Optional<ButtonType> result = confirm.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    repo.removeTransacao(item);
+                    // recarrega a tela para atualizar cards/gráficos/tabela
+                    if (onRefresh != null) onRefresh.run();
+                }
+            });
+            rowMenu.getItems().addAll(deleteItem);
+
+            // apenas mostra o menu em linhas não vazias
+            row.contextMenuProperty().bind(
+                    javafx.beans.binding.Bindings.when(row.emptyProperty())
+                            .then((ContextMenu) null)
+                            .otherwise(rowMenu)
+            );
+            return row;
+        });
+
         return table;
     }
 
     private PieChart createPieChart() {
         PieChart chart = new PieChart();
         // Filtra apenas DESPESAS para o gráfico fazer sentido
-        Map<String, Double> porCat = porCategoriaDespesa();
+        Map<String, Double> porCat = repo.getTransacoes().stream()
+                .filter(t -> t.getClass().getSimpleName().equalsIgnoreCase("Despesa"))
+                .filter(t -> t.getCategoria() != null)
+                .collect(Collectors.groupingBy(t -> t.getCategoria().getNome(),
+                        Collectors.summingDouble(t -> {
+                            BigDecimal v = t.getValorBRL() == null ? t.getValorOriginal() : t.getValorBRL();
+                            return v.doubleValue();
+                        })))
+                ;
 
-        List<PieChart.Data> data = porCat.entrySet().stream()
-                .map(en -> new PieChart.Data(en.getKey(), en.getValue()))
-                .collect(Collectors.toList());
-
-        chart.setData(FXCollections.observableArrayList(data));
+        for (Map.Entry<String, Double> e : porCat.entrySet()) {
+            chart.getData().add(new PieChart.Data(e.getKey(), e.getValue()));
+        }
         return chart;
     }
 
-    public Node getView() {
-        return view;
-    }
-
-    // --- Métodos de Cálculo ---
-
     private double calcularSaldo() {
         return repo.getTransacoes().stream()
-                .map(Transacao::impactoNoSaldo)
-                .map(BigDecimal::doubleValue)
+                .map(t -> t.impactoNoSaldo().doubleValue())
                 .reduce(0.0, Double::sum);
     }
 
     private double totalReceitas() {
         return repo.getTransacoes().stream()
-                .filter(t -> t instanceof Receita) // Uso seguro de instanceof
-                .map(Transacao::impactoNoSaldo)
-                .map(BigDecimal::doubleValue)
-                .reduce(0.0, Double::sum);
+                .filter(t -> t.getClass().getSimpleName().equalsIgnoreCase("Receita"))
+                .mapToDouble(t -> {
+                    BigDecimal v = t.getValorBRL() == null ? t.getValorOriginal() : t.getValorBRL();
+                    return v.doubleValue();
+                }).sum();
     }
 
     private double totalDespesas() {
         return repo.getTransacoes().stream()
-                .filter(t -> t instanceof Despesa)
-                .map(Transacao::impactoNoSaldo)
-                .map(BigDecimal::doubleValue)
-                .map(Math::abs) // Pega valor absoluto para mostrar no card
-                .reduce(0.0, Double::sum);
-    }
-
-    private Map<String, Double> porCategoriaDespesa() {
-        Map<String, Double> map = new HashMap<>();
-        repo.getTransacoes().stream()
-                .filter(t -> t instanceof Despesa) // Apenas despesas no gráfico
-                .forEach(t -> {
-                    String nome = t.getCategoria() == null ? "Outros" : t.getCategoria().getNome();
-                    double val = Math.abs((t.getValorBRL() == null ? t.getValorOriginal().doubleValue() : t.getValorBRL().doubleValue()));
-                    map.put(nome, map.getOrDefault(nome, 0.0) + val);
-                });
-        return map;
+                .filter(t -> t.getClass().getSimpleName().equalsIgnoreCase("Despesa"))
+                .mapToDouble(t -> {
+                    BigDecimal v = t.getValorBRL() == null ? t.getValorOriginal() : t.getValorBRL();
+                    return v.doubleValue();
+                }).sum();
     }
 }

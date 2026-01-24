@@ -13,6 +13,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.UUID;
 
 public class RepositorioPersistencia {
     private static RepositorioPersistencia instance;
@@ -60,6 +61,30 @@ public class RepositorioPersistencia {
 
     public void removeTransacao(Transacao t) {
         transacoes.remove(t);
+        saveTransacoes();
+    }
+
+    /**
+     * Limpa todas as transações (persistindo o estado vazio).
+     * Útil para iniciar uma nova gestão sem remover categorias.
+     */
+    public void clearTransacoes() {
+        transacoes.clear();
+        saveTransacoes();
+    }
+
+    /**
+     * Reinicia dados para uma "nova gestão": limpa transações, limpa categorias
+     * e recria categorias padrão, persistindo tudo em disco.
+     */
+    public void resetData() {
+        transacoes.clear();
+        categorias.clear();
+        // categorias padrão
+        categorias.add(new Categoria(UUID.randomUUID().toString(), "Salário", "#4CAF50"));
+        categorias.add(new Categoria(UUID.randomUUID().toString(), "Alimentação", "#FF9800"));
+        categorias.add(new Categoria(UUID.randomUUID().toString(), "Transporte", "#2196F3"));
+        saveCategorias();
         saveTransacoes();
     }
 
